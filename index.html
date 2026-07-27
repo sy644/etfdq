@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 · 计算器</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ===== 页面主体（登入时的背景图设置在这里） ===== */
+        body {
+            /* ✅ 就是这一行设置了登入背景图，文件名叫 login-bg.jpg */
+            background-image: url('login-bg.jpg');
+            
+            /* 下面3行是固定搭配：铺满全屏、居中、不重复 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            /* 备用底色（万一图片没加载出来显示这个） */
+            background-color: #f0f2f5;
+            
+            /* 弹性布局（让内容居中） */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* ===== 登录框（半透明毛玻璃效果，透出背景图） ===== */
+        #loginBox {
+            background: rgba(255, 255, 255, 0.88);  /* 白色半透明 */
+            backdrop-filter: blur(12px);            /* 毛玻璃模糊效果 */
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 340px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        #loginBox h2 {
+            margin-bottom: 20px;
+            color: #1c1c1e;
+            font-weight: 600;
+        }
+        #loginBox input {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            outline: none;
+            transition: 0.2s;
+        }
+        #loginBox input:focus {
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        }
+        #loginBox button {
+            width: 100%;
+            padding: 14px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        #loginBox button:hover {
+            background: #0055b3;
+            transform: scale(0.98);
+        }
+        #loginError {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        .hint-text {
+            margin-top: 15px;
+            color: rgba(0, 0, 0, 0.4);
+            font-size: 12px;
+        }
+
+        /* ===== 计算器（登录后显示） ===== */
+        #calculatorApp {
+            display: none;  /* 默认隐藏 */
+            width: 320px;
+        }
+        .calculator {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .display {
+            background: #1c1c1e;
+            color: white;
+            text-align: right;
+            padding: 20px;
+            font-size: 2.8rem;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            min-height: 85px;
+            word-break: break-all;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .btn {
+            padding: 20px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            background: #f8f9fa;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+        .btn:active {
+            transform: scale(0.92);
+        }
+        .btn.number {
+            background: #ffffff;
+            color: #1c1c1e;
+        }
+        .btn.number:hover {
+            background: #f0f0f0;
+        }
+        .btn.operator {
+            background: #e3f0ff;
+            color: #007aff;
+        }
+        .btn.operator:hover {
+            background: #d0e6ff;
+        }
+        .btn.clear {
+            background: #ffe5e5;
+            color: #ff3b30;
+        }
+        .btn.clear:hover {
+            background: #ffd0d0;
+        }
+        .btn.equals {
+            background: #007aff;
+            color: white;
+        }
+        .btn.equals:hover {
+            background: #0055b3;
+        }
+        .logout-btn {
+            margin-top: 16px;
+            padding: 12px;
+            width: 100%;
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .logout-btn:hover {
+            background: #ff3b30;
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================= -->
+    <!-- 1. 登入界面（带背景图） -->
+    <!-- ========================================= -->
+    <div id="loginBox">
+        <h2>🔐 欢迎</h2>
+        <input type="text" id="username" placeholder="用户名" value="admin">
+        <input type="password" id="password" placeholder="密码" value="123456">
+        <button onclick="login()">登 录</button>
+        <div id="loginError">❌ 用户名或密码错误</div>
+        <p class="hint-text">默认账号 admin / 密码 123456</p>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- 2. 计算器应用（登录后显示，背景变纯色） -->
+    <!-- ========================================= -->
+    <div id="calculatorApp">
+        <div class="calculator">
+            <div class="display" id="display">0</div>
+            <div class="buttons">
+                <button class="btn operator" data-value="+">+</button>
+                <button class="btn operator" data-value="-">−</button>
+                <button class="btn operator" data-value="*">×</button>
+                <button class="btn operator" data-value="/">÷</button>
+                <button class="btn number" data-value="7">7</button>
+                <button class="btn number" data-value="8">8</button>
+                <button class="btn number" data-value="9">9</button>
+                <button class="btn number" data-value="4">4</button>
+                <button class="btn number" data-value="5">5</button>
+                <button class="btn number" data-value="6">6</button>
+                <button class="btn number" data-value="1">1</button>
+                <button class="btn number" data-value="2">2</button>
+                <button class="btn number" data-value="3">3</button>
+                <button class="btn number" data-value="0">0</button>
+                <button class="btn number" data-value=".">.</button>
+                <button class="btn clear" id="clear">C</button>
+                <button class="btn equals" id="equals">=</button>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 退出登录</button>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // 计算器逻辑（完全保留，一个字没动）
+        // =============================================
+        const display = document.getElementById('display');
+        let currentInput = '0';
+        let previousInput = '';
+        let operator = null;
+        let shouldResetDisplay = false;
+
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        function inputNumber(value) {
+            if (shouldResetDisplay) {
+                currentInput = value;
+                shouldResetDisplay = false;
+            } else {
+                currentInput = currentInput === '0' ? value : currentInput + value;
+            }
+            updateDisplay();
+        }
+
+        function inputOperator(op) {
+            if (operator && !shouldResetDisplay) {
+                calculate();
+            }
+            previousInput = currentInput;
+            operator = op;
+            shouldResetDisplay = true;
+        }
+
+        function calculate() {
+            const prev = parseFloat(previousInput);
+            const curr = parseFloat(currentInput);
+            if (isNaN(prev) || isNaN(curr)) return;
+            let result;
+            switch (operator) {
+                case '+': result = prev + curr; break;
+                case '-': result = prev - curr; break;
+                case '*': result = prev * curr; break;
+                case '/': result = curr === 0 ? 'Error' : prev / curr; break;
+                default: return;
+            }
+            currentInput = result.toString();
+            operator = null;
+            previousInput = '';
+            shouldResetDisplay = true;
+            updateDisplay();
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operator = null;
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        document.querySelectorAll('.number').forEach(btn => {
+            btn.addEventListener('click', () => inputNumber(btn.dataset.value));
+        });
+        document.querySelectorAll('.operator').forEach(btn => {
+            btn.addEventListener('click', () => inputOperator(btn.dataset.value));
+        });
+        document.getElementById('equals').addEventListener('click', calculate);
+        document.getElementById('clear').addEventListener('click', clearAll);
+
+        // =============================================
+        // 登录 & 退出（控制背景图切换）
+        // =============================================
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const error = document.getElementById('loginError');
+
+            if (user === 'admin' && pass === '123456') {
+                error.style.display = 'none';
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('calculatorApp').style.display = 'block';
+
+                // ✅ 登录成功后：移除背景图，换成浅灰色（计算器界面清爽干净）
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundColor = '#f0f2f5';
+            } else {
+                error.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            document.getElementById('calculatorApp').style.display = 'none';
+            document.getElementById('loginBox').style.display = 'block';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').style.display = 'none';
+
+            // ✅ 退出登录后：恢复背景图（重新显示登入背景）
+            document.body.style.backgroundImage = "url('login-bg.jpg')";
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundRepeat = 'no-repeat';
+            document.body.style.backgroundColor = '#f0f2f5';
+        }
+
+        // 按回车键触发登录
+        document.getElementById('password').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>
