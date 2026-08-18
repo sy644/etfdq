@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文档格式转换工具</title>
+    <!-- 依赖库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <span class="icon">📄</span>
+            <h1>文档格式转换</h1>
+            <span class="badge">TXT · Word · PDF</span>
+        </div>
+
+        <!-- 上传区域 -->
+        <div class="upload-zone" id="uploadZone">
+            <span class="upload-icon">📤</span>
+            <div class="upload-text">拖拽文件到此处，或点击上传</div>
+            <div class="upload-hint">支持 .txt .docx .pdf 格式</div>
+            <div class="upload-formats">⬆ 点击或拖拽上传</div>
+            <input type="file" id="fileInput" accept=".txt,.docx,.pdf" />
+        </div>
+
+        <!-- 文件信息 -->
+        <div class="file-info" id="fileInfo">
+            <span class="fi-name" id="fiName">文件名</span>
+            <span class="fi-size" id="fiSize">0 KB</span>
+            <span class="fi-type" id="fiType">TXT</span>
+            <button class="fi-remove" id="fiRemove" title="移除文件">✕</button>
+        </div>
+
+        <!-- 编辑区 -->
+        <div class="editor-area">
+            <div class="label-row">
+                <label for="contentEditor">📝 内容预览 / 编辑</label>
+                <span class="word-count" id="wordCount">字数: 0</span>
+            </div>
+            <textarea id="contentEditor" placeholder="上传文件后，内容将显示在这里，您可以直接编辑…" spellcheck="false"></textarea>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-bar">
+            <button class="btn btn-primary" id="btnToTxt">📄 转 TXT</button>
+            <button class="btn btn-warning" id="btnToWord">📝 转 Word</button>
+            <button class="btn btn-success" id="btnToPdf">📑 转 PDF</button>
+            <span class="spacer"></span>
+            <button class="btn btn-outline" id="btnDownload">💾 保存</button>
+            <button class="btn btn-outline" id="btnClear">🗑 清空</button>
+        </div>
+
+        <!-- 提示条 -->
+        <div class="toast" id="toast">
+            <span id="toastIcon">ℹ</span>
+            <span id="toastMsg">提示信息</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
