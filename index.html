@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>工具箱</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
+    <title>我的工具箱</title>
     <style>
         * {
             margin: 0;
@@ -13,180 +13,168 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #000;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
+            background: #f2f5f9;
+            min-height: 100vh;
+            padding: 20px 16px 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* iframe 全屏容器 */
-        .iframe-wrapper {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            background: #ffffff;
-        }
-        .iframe-wrapper iframe {
+        /* 顶部标题和操作栏 */
+        .header {
             width: 100%;
-            height: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 0 4px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .header-actions button {
+            background: #ffffff;
             border: none;
-            display: block;
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-actions button:active {
+            transform: scale(0.94);
+            background: #e9edf2;
+        }
+        .header-actions .add-btn {
+            background: #1e293b;
+            color: #fff;
+        }
+        .header-actions .add-btn:active {
+            background: #0f172a;
         }
 
-        /* 加载占位 */
-        .loading-placeholder {
-            position: absolute;
-            inset: 0;
+        /* 图标网格容器 */
+        .grid {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        /* 每个工具卡片 */
+        .tool-card {
+            flex: 0 0 auto;
+            /* 宽度由 js 动态计算，保证自适应 */;
+            aspect-ratio: 1 / 1;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #f8fafc;
-            color: #94a3b8;
-            font-size: 14px;
-            gap: 14px;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 2;
-        }
-        .loading-placeholder.hidden {
-            opacity: 0;
-        }
-        .loading-spinner {
-            width: 34px;
-            height: 34px;
-            border: 3px solid #e2e8f0;
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== 悬浮球 ===== */
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #1e293b;
-            color: #fff;
-            font-size: 28px;
-            border: none;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
             cursor: pointer;
-            z-index: 999;
+            transition: transform 0.15s, box-shadow 0.2s;
+            text-decoration: none;
+            color: #0f172a;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.02);
+            padding: 8px;
+        }
+        .tool-card:active {
+            transform: scale(0.94);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .tool-card .icon {
+            font-size: 40px;
+            font-weight: 600;
+            line-height: 1;
+            margin-bottom: 6px;
+            color: #fff;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.15s, background 0.2s;
-            touch-action: manipulation;
+            background: #3b82f6;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
-        .fab:active {
-            transform: scale(0.88);
-        }
-        .fab.open {
-            background: #0f172a;
-        }
-
-        /* ===== 弹出工具列表 ===== */
-        .tool-drawer {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.25);
-            padding: 12px 0;
-            min-width: 160px;
-            max-width: 240px;
-            max-height: 60vh;
-            overflow-y: auto;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.8) translateY(10px);
-            transform-origin: bottom right;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            backdrop-filter: blur(8px);
-            background: rgba(255,255,255,0.96);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .tool-drawer.show {
-            opacity: 1;
-            pointer-events: auto;
-            transform: scale(1) translateY(0);
-        }
-
-        .tool-drawer .drawer-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
-            font-size: 15px;
-            font-weight: 500;
-            color: #1e293b;
-            border-bottom: 1px solid #f1f4f8;
-            cursor: pointer;
-            transition: background 0.1s;
-            white-space: nowrap;
-        }
-        .tool-drawer .drawer-item:last-child {
-            border-bottom: none;
-        }
-        .tool-drawer .drawer-item:active {
-            background: #f1f4f8;
-        }
-        .tool-drawer .drawer-item .check {
-            color: #3b82f6;
-            font-size: 18px;
-            margin-left: 12px;
-            opacity: 0;
-        }
-        .tool-drawer .drawer-item.active .check {
-            opacity: 1;
-        }
-
-        /* 管理入口（在列表底部） */
-        .drawer-footer {
-            border-top: 1px solid #e9edf2;
-            padding: 8px 16px 4px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .drawer-footer button {
-            background: none;
-            border: none;
+        .tool-card .label {
             font-size: 14px;
-            color: #64748b;
-            padding: 8px 12px;
-            border-radius: 30px;
-            cursor: pointer;
             font-weight: 500;
-            transition: background 0.15s;
-        }
-        .drawer-footer button:active {
-            background: #f1f4f8;
-        }
-        .drawer-footer .refresh-btn-drawer {
-            color: #3b82f6;
-        }
-        .drawer-footer .add-btn-drawer {
-            color: #0f172a;
-        }
-
-        /* 无工具提示 */
-        .no-tools-msg {
-            padding: 20px;
             text-align: center;
-            color: #94a3b8;
-            font-size: 14px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 4px;
+            color: #1e293b;
         }
 
-        /* ===== 管理弹窗（同前） ===== */
+        /* 删除按钮（悬停/点击显示） */
+        .tool-card .delete-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: #fff;
+            border: 2px solid #fff;
+            font-size: 16px;
+            font-weight: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+            line-height: 1;
+        }
+        .tool-card:hover .delete-btn,
+        .tool-card:focus-within .delete-btn {
+            display: flex;
+        }
+        /* 手机触摸长按显示删除（简化处理：点击卡片会跳转，所以删除用独立按钮） */
+        .tool-card .delete-btn:active {
+            transform: scale(0.85);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            width: 100%;
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .empty-state .big-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* ===== 管理弹窗 ===== */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -195,7 +183,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
+            z-index: 1000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.25s ease;
@@ -206,11 +194,11 @@
         }
         .modal-box {
             background: #ffffff;
-            border-radius: 20px;
-            padding: 24px 28px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 24px;
+            padding: 28px 24px;
+            max-width: 420px;
+            width: 92%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
             transform: translateY(20px);
             transition: transform 0.25s ease;
         }
@@ -218,24 +206,24 @@
             transform: translateY(0);
         }
         .modal-box h3 {
-            font-size: 18px;
+            font-size: 20px;
             margin-bottom: 18px;
             color: #0f172a;
         }
         .modal-box label {
             display: block;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             color: #334155;
-            margin-top: 12px;
+            margin-top: 14px;
             margin-bottom: 4px;
         }
         .modal-box input {
             width: 100%;
-            padding: 10px 14px;
+            padding: 12px 16px;
             border: 1px solid #d1d9e6;
-            border-radius: 12px;
-            font-size: 15px;
+            border-radius: 14px;
+            font-size: 16px;
             outline: none;
             transition: border 0.2s;
             background: #fafcfd;
@@ -247,14 +235,14 @@
         .modal-actions {
             display: flex;
             gap: 10px;
-            margin-top: 22px;
+            margin-top: 24px;
             justify-content: flex-end;
         }
         .modal-actions button {
-            padding: 10px 24px;
+            padding: 12px 28px;
             border: none;
             border-radius: 30px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             transition: background 0.15s;
@@ -263,140 +251,69 @@
             background: #f1f4f8;
             color: #1e293b;
         }
-        .modal-actions .btn-cancel:hover {
+        .modal-actions .btn-cancel:active {
             background: #e2e8f0;
         }
         .modal-actions .btn-confirm {
             background: #1e293b;
             color: #fff;
         }
-        .modal-actions .btn-confirm:hover {
+        .modal-actions .btn-confirm:active {
             background: #0f172a;
         }
-        .tool-list {
-            margin: 12px 0 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            border-top: 1px solid #e9edf2;
-            padding-top: 10px;
-        }
-        .tool-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 4px;
-            border-bottom: 1px solid #f1f4f8;
-            font-size: 14px;
-        }
-        .tool-list-item .name {
-            font-weight: 500;
-            color: #0f172a;
-        }
-        .tool-list-item .url {
-            color: #64748b;
-            font-size: 12px;
-            max-width: 160px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .tool-list-item .del-tool {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 6px;
-        }
-        .tool-list-item .del-tool:hover {
-            color: #ef4444;
-        }
-        .no-tools {
-            color: #94a3b8;
-            font-size: 14px;
-            text-align: center;
-            padding: 16px 0;
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 480px) {
+            body { padding: 16px 12px 80px; }
+            .header h1 { font-size: 20px; }
+            .header-actions button { padding: 6px 14px; font-size: 13px; }
+            .tool-card .icon { width: 52px; height: 52px; font-size: 32px; }
+            .tool-card .label { font-size: 12px; }
         }
 
-        /* ===== 暗色适配（可选） ===== */
+        /* 暗色模式适配 */
         @media (prefers-color-scheme: dark) {
-            .fab {
-                background: #334155;
-            }
-            .tool-drawer {
-                background: rgba(30, 41, 59, 0.96);
-                border-color: rgba(255,255,255,0.08);
-            }
-            .tool-drawer .drawer-item {
-                color: #e2e8f0;
-                border-bottom-color: rgba(255,255,255,0.06);
-            }
-            .tool-drawer .drawer-item:active {
-                background: rgba(255,255,255,0.06);
-            }
-            .drawer-footer {
-                border-top-color: rgba(255,255,255,0.08);
-            }
-            .drawer-footer button {
-                color: #94a3b8;
-            }
-            .drawer-footer .refresh-btn-drawer {
-                color: #60a5fa;
-            }
-            .drawer-footer .add-btn-drawer {
-                color: #e2e8f0;
-            }
-            .modal-box {
-                background: #1e293b;
-                color: #e2e8f0;
-            }
-            .modal-box label {
-                color: #cbd5e1;
-            }
-            .modal-box input {
-                background: #0f172a;
-                border-color: #334155;
-                color: #e2e8f0;
-            }
-            .modal-actions .btn-cancel {
-                background: #334155;
-                color: #e2e8f0;
-            }
-            .modal-actions .btn-confirm {
-                background: #3b82f6;
-            }
+            body { background: #0f172a; }
+            .header h1 { color: #f1f5f9; }
+            .header-actions button { background: #1e293b; color: #e2e8f0; box-shadow: none; }
+            .header-actions .add-btn { background: #3b82f6; color: #fff; }
+            .tool-card { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+            .tool-card .label { color: #e2e8f0; }
+            .empty-state { color: #64748b; }
+            .modal-box { background: #1e293b; color: #f1f5f9; }
+            .modal-box label { color: #cbd5e1; }
+            .modal-box input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+            .modal-actions .btn-cancel { background: #334155; color: #e2e8f0; }
+            .modal-actions .btn-confirm { background: #3b82f6; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== iframe 容器（全屏） ===== -->
-    <div class="iframe-wrapper" id="iframeWrapper">
-        <div class="loading-placeholder" id="loadingPlaceholder">
-            <div class="loading-spinner"></div>
-            <span>加载中…</span>
+    <!-- 顶部 -->
+    <div class="header">
+        <h1>📱 我的工具</h1>
+        <div class="header-actions">
+            <button class="add-btn" id="addBtn">＋ 添加</button>
         </div>
     </div>
 
-    <!-- ===== 悬浮球 ===== -->
-    <button class="fab" id="fabBtn" aria-label="切换工具">🧰</button>
+    <!-- 图标网格 -->
+    <div class="grid" id="gridContainer"></div>
 
-    <!-- ===== 弹出工具列表 ===== -->
-    <div class="tool-drawer" id="toolDrawer">
-        <div id="drawerList"></div>
-        <div class="drawer-footer">
-            <button class="refresh-btn-drawer" id="refreshDrawerBtn">⟳ 刷新</button>
-            <button class="add-btn-drawer" id="addDrawerBtn">＋ 添加</button>
-        </div>
-    </div>
-
-    <!-- ===== 管理弹窗 ===== -->
+    <!-- ===== 添加/编辑弹窗 ===== -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
-            <h3 id="modalTitle">管理工具</h3>
-            <div id="modalBody"></div>
+            <h3 id="modalTitle">添加工具</h3>
+            <label>工具名称</label>
+            <input type="text" id="toolNameInput" placeholder="例如：记账本" />
+            <label>网址 (URL)</label>
+            <input type="url" id="toolUrlInput" placeholder="https://example.com/" />
+            <label>图标 (可选, 一个 emoji 或字母)</label>
+            <input type="text" id="toolIconInput" placeholder="📊 或 A" maxlength="2" />
             <div class="modal-actions">
-                <button class="btn-cancel" id="modalCancel">关闭</button>
+                <button class="btn-cancel" id="modalCancel">取消</button>
+                <button class="btn-confirm" id="modalConfirm">保存</button>
             </div>
         </div>
     </div>
@@ -406,24 +323,24 @@
             'use strict';
 
             // ============================================================
-            // 1. 默认工具（周记账已更新）
+            // 1. 存储
             // ============================================================
-            const DEFAULT_TOOLS = [
-                { name: '周记账', src: 'https://sy644.github.io/Zjz/' },
-                { name: '基金投资', src: 'https://sy644.github.io/fund/' },
-                { name: '股票参谋', src: 'https://sy644.github.io/irain/kline/stock.html?code=sh600519' }
-            ];
+            const STORAGE_KEY = 'toolbox_icons_tools';
 
-            const STORAGE_KEY = 'toolbox_tools';
+            // 预设为空数组（用户自行添加）
+            const DEFAULT_TOOLS = [];
 
             function loadTools() {
                 try {
                     const data = localStorage.getItem(STORAGE_KEY);
                     if (data) {
                         const parsed = JSON.parse(data);
-                        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                        if (Array.isArray(parsed) && parsed.length >= 0) {
+                            return parsed;
+                        }
                     }
                 } catch (e) {}
+                // 如果无数据，写入默认（空）并返回
                 saveTools(DEFAULT_TOOLS);
                 return DEFAULT_TOOLS.slice();
             }
@@ -435,332 +352,222 @@
             // ============================================================
             // 2. DOM 引用
             // ============================================================
-            const wrapper = document.getElementById('iframeWrapper');
-            const loadingEl = document.getElementById('loadingPlaceholder');
-            const fabBtn = document.getElementById('fabBtn');
-            const drawer = document.getElementById('toolDrawer');
-            const drawerList = document.getElementById('drawerList');
-            const refreshDrawerBtn = document.getElementById('refreshDrawerBtn');
-            const addDrawerBtn = document.getElementById('addDrawerBtn');
+            const grid = document.getElementById('gridContainer');
+            const addBtn = document.getElementById('addBtn');
             const modalOverlay = document.getElementById('modalOverlay');
-            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const toolNameInput = document.getElementById('toolNameInput');
+            const toolUrlInput = document.getElementById('toolUrlInput');
+            const toolIconInput = document.getElementById('toolIconInput');
             const modalCancel = document.getElementById('modalCancel');
+            const modalConfirm = document.getElementById('modalConfirm');
 
-            let currentIframe = null;
-            let activeIndex = 0;
             let tools = loadTools();
-            let isDrawerOpen = false;
+            let editingIndex = -1; // -1 表示新增
 
             // ============================================================
-            // 3. 渲染弹出列表
+            // 3. 颜色生成 (基于字符串)
             // ============================================================
-            function renderDrawer() {
-                drawerList.innerHTML = '';
+            function stringToColor(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const hue = Math.abs(hash) % 360;
+                return `hsl(${hue}, 65%, 55%)`;
+            }
+
+            // ============================================================
+            // 4. 渲染网格 (自适应大小)
+            // ============================================================
+            function renderGrid() {
+                grid.innerHTML = '';
+
                 if (tools.length === 0) {
-                    drawerList.innerHTML = `<div class="no-tools-msg">暂无工具，点击「添加」</div>`;
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="big-icon">🧰</div>
+                            <p>还没有工具，点击右上角「添加」</p>
+                        </div>
+                    `;
                     return;
                 }
+
+                // 计算每个卡片尺寸：容器宽度 - 间距 (gap 16px)
+                const containerWidth = grid.clientWidth || 800;
+                // 根据工具数量动态决定每行个数：最少2个，最多6个，并保证最小尺寸120px
+                let columns = Math.min(6, Math.max(2, Math.ceil(Math.sqrt(tools.length * 1.5))));
+                // 如果工具很少（≤3），让卡片大一些
+                if (tools.length <= 3) columns = 2;
+                else if (tools.length <= 6) columns = 3;
+                else if (tools.length <= 12) columns = 4;
+                else columns = 5;
+
+                // 计算卡片宽度： (总宽度 - (columns-1)*gap) / columns
+                const gap = 16;
+                const availableWidth = containerWidth - (columns - 1) * gap;
+                const cardSize = Math.max(100, Math.floor(availableWidth / columns));
+                // 限制最大尺寸 180px
+                const finalSize = Math.min(cardSize, 180);
+
                 tools.forEach((tool, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'drawer-item' + (index === activeIndex ? ' active' : '');
-                    item.innerHTML = `
-                        <span>${escapeHtml(tool.name)}</span>
-                        <span class="check">✓</span>
-                    `;
-                    item.addEventListener('click', function(e) {
+                    const card = document.createElement('a');
+                    card.className = 'tool-card';
+                    card.href = tool.src;
+                    card.target = '_blank'; // 新窗口打开，用户也可通过设置改为 _self
+                    card.rel = 'noopener noreferrer';
+                    card.style.width = finalSize + 'px';
+                    card.style.height = finalSize + 'px';
+
+                    // 图标
+                    let iconChar = tool.icon ? tool.icon.trim() : '';
+                    if (!iconChar) {
+                        // 取名称首字母，若为中文则取第一个汉字
+                        const first = tool.name.trim().charAt(0) || '?';
+                        iconChar = first.toUpperCase();
+                    }
+                    const bgColor = stringToColor(tool.name + tool.src);
+
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = 'icon';
+                    iconDiv.style.background = bgColor;
+                    iconDiv.textContent = iconChar;
+
+                    const label = document.createElement('div');
+                    label.className = 'label';
+                    label.textContent = tool.name;
+
+                    // 删除按钮
+                    const delBtn = document.createElement('div');
+                    delBtn.className = 'delete-btn';
+                    delBtn.textContent = '✕';
+                    delBtn.title = '删除此工具';
+                    // 阻止点击删除时触发跳转
+                    delBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
                         e.stopPropagation();
-                        switchTool(index);
-                        closeDrawer();
-                    });
-                    drawerList.appendChild(item);
-                });
-            }
-
-            // ============================================================
-            // 4. 切换工具
-            // ============================================================
-            function switchTool(index) {
-                if (index < 0 || index >= tools.length) {
-                    if (tools.length > 0) index = 0;
-                    else return;
-                }
-                activeIndex = index;
-                const tool = tools[index];
-                if (!tool) return;
-
-                // 更新列表高亮
-                document.querySelectorAll('.drawer-item').forEach((el, i) => {
-                    el.classList.toggle('active', i === index);
-                });
-
-                loadingEl.classList.remove('hidden');
-
-                if (currentIframe) {
-                    currentIframe.remove();
-                    currentIframe = null;
-                }
-
-                const iframe = document.createElement('iframe');
-                iframe.src = tool.src;
-                iframe.allow = 'accelerometer; camera; gyroscope; microphone; autoplay; clipboard-read; clipboard-write';
-                iframe.sandbox = 'allow-same-origin allow-scripts allow-forms allow-popups allow-modals';
-                iframe.loading = 'eager';
-                wrapper.appendChild(iframe);
-                currentIframe = iframe;
-
-                iframe.addEventListener('load', function onLoad() {
-                    loadingEl.classList.add('hidden');
-                    iframe.removeEventListener('load', onLoad);
-                });
-
-                setTimeout(() => {
-                    if (!loadingEl.classList.contains('hidden')) {
-                        loadingEl.classList.add('hidden');
-                    }
-                }, 5000);
-            }
-
-            // ============================================================
-            // 5. 刷新
-            // ============================================================
-            function refreshCurrent() {
-                if (currentIframe) {
-                    loadingEl.classList.remove('hidden');
-                    const src = currentIframe.src;
-                    currentIframe.src = 'about:blank';
-                    setTimeout(() => {
-                        currentIframe.src = src;
-                    }, 80);
-                    const onRefreshLoad = function() {
-                        loadingEl.classList.add('hidden');
-                        currentIframe.removeEventListener('load', onRefreshLoad);
-                    };
-                    currentIframe.addEventListener('load', onRefreshLoad);
-                    setTimeout(() => {
-                        if (!loadingEl.classList.contains('hidden')) {
-                            loadingEl.classList.add('hidden');
-                        }
-                    }, 5000);
-                } else if (tools.length > 0) {
-                    switchTool(activeIndex);
-                }
-            }
-
-            // ============================================================
-            // 6. 抽屉开关
-            // ============================================================
-            function toggleDrawer() {
-                isDrawerOpen = !isDrawerOpen;
-                drawer.classList.toggle('show', isDrawerOpen);
-                fabBtn.classList.toggle('open', isDrawerOpen);
-                fabBtn.textContent = isDrawerOpen ? '✕' : '🧰';
-                if (isDrawerOpen) renderDrawer();
-            }
-
-            function closeDrawer() {
-                isDrawerOpen = false;
-                drawer.classList.remove('show');
-                fabBtn.classList.remove('open');
-                fabBtn.textContent = '🧰';
-            }
-
-            // ============================================================
-            // 7. 管理弹窗
-            // ============================================================
-            function openManageModal() {
-                renderManageContent();
-                modalOverlay.classList.add('show');
-                closeDrawer();
-            }
-
-            function closeManageModal() {
-                modalOverlay.classList.remove('show');
-            }
-
-            function renderManageContent() {
-                let html = `
-                    <label>工具名称</label>
-                    <input type="text" id="newToolName" placeholder="例如：天气查询" />
-                    <label>网址 (URL)</label>
-                    <input type="url" id="newToolUrl" placeholder="https://example.com/" />
-                    <div style="margin-top:12px; text-align:right;">
-                        <button class="btn-confirm" id="addToolBtn" style="padding:8px 24px;">添加</button>
-                    </div>
-                    <div class="tool-list" id="toolListContainer">
-                `;
-                if (tools.length === 0) {
-                    html += `<div class="no-tools">还没有工具，快来添加吧</div>`;
-                } else {
-                    tools.forEach((t, i) => {
-                        html += `
-                            <div class="tool-list-item">
-                                <div>
-                                    <div class="name">${escapeHtml(t.name)}</div>
-                                    <div class="url">${escapeHtml(t.src)}</div>
-                                </div>
-                                <button class="del-tool" data-index="${i}" title="删除">✕</button>
-                            </div>
-                        `;
-                    });
-                }
-                html += `</div>`;
-                modalBody.innerHTML = html;
-
-                // 添加事件
-                const addBtnEl = document.getElementById('addToolBtn');
-                const nameInput = document.getElementById('newToolName');
-                const urlInput = document.getElementById('newToolUrl');
-                addBtnEl.addEventListener('click', function() {
-                    const name = nameInput.value.trim();
-                    let url = urlInput.value.trim();
-                    if (!name || !url) {
-                        alert('请填写完整信息');
-                        return;
-                    }
-                    try {
-                        new URL(url);
-                    } catch (e) {
-                        alert('网址格式不正确，请以 http:// 或 https:// 开头');
-                        return;
-                    }
-                    tools.push({ name, src: url });
-                    saveTools(tools);
-                    renderManageContent();
-                    renderDrawer();
-                    if (!currentIframe) {
-                        switchTool(tools.length - 1);
-                    } else {
-                        // 仅更新高亮
-                        document.querySelectorAll('.drawer-item').forEach((el, i) => {
-                            el.classList.toggle('active', i === activeIndex);
-                        });
-                    }
-                    nameInput.value = '';
-                    urlInput.value = '';
-                });
-
-                document.querySelectorAll('.del-tool').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const index = parseInt(this.dataset.index, 10);
-                        if (isNaN(index)) return;
-                        if (confirm(`确定要删除「${tools[index].name}」吗？`)) {
+                        if (confirm(`确定删除「${tool.name}」吗？`)) {
                             tools.splice(index, 1);
                             saveTools(tools);
-                            if (activeIndex >= tools.length) {
-                                activeIndex = Math.max(0, tools.length - 1);
-                            }
-                            renderManageContent();
-                            renderDrawer();
-                            if (tools.length > 0) {
-                                switchTool(activeIndex);
-                            } else {
-                                if (currentIframe) {
-                                    currentIframe.remove();
-                                    currentIframe = null;
-                                }
-                                loadingEl.classList.add('hidden');
-                            }
+                            renderGrid();
                         }
                     });
-                });
 
-                // 回车提交
-                [nameInput, urlInput].forEach(inp => {
-                    if (inp) {
-                        inp.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter') {
-                                addBtnEl.click();
-                            }
-                        });
-                    }
-                });
-            }
+                    card.appendChild(iconDiv);
+                    card.appendChild(label);
+                    card.appendChild(delBtn);
 
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+                    // 点击卡片跳转（默认在新窗口打开）
+                    // 如果需要当前窗口，可修改 target，或使用 onclick 阻止默认
+                    card.addEventListener('click', function(e) {
+                        // 如果点击了删除按钮，不会到这里
+                        // 默认行为是打开链接
+                    });
+
+                    grid.appendChild(card);
+                });
             }
 
             // ============================================================
-            // 8. 初始化 & 事件绑定
+            // 5. 管理弹窗（添加/编辑）
+            // ============================================================
+            function openModal(index = -1) {
+                editingIndex = index;
+                if (index === -1) {
+                    modalTitle.textContent = '添加工具';
+                    toolNameInput.value = '';
+                    toolUrlInput.value = '';
+                    toolIconInput.value = '';
+                } else {
+                    const tool = tools[index];
+                    modalTitle.textContent = '编辑工具';
+                    toolNameInput.value = tool.name;
+                    toolUrlInput.value = tool.src;
+                    toolIconInput.value = tool.icon || '';
+                }
+                modalOverlay.classList.add('show');
+                // 聚焦第一个输入
+                setTimeout(() => toolNameInput.focus(), 100);
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('show');
+                editingIndex = -1;
+            }
+
+            function saveToolFromModal() {
+                const name = toolNameInput.value.trim();
+                let src = toolUrlInput.value.trim();
+                const icon = toolIconInput.value.trim().slice(0, 2);
+
+                if (!name || !src) {
+                    alert('请填写名称和网址');
+                    return;
+                }
+                // 验证 URL
+                try {
+                    new URL(src);
+                } catch (e) {
+                    alert('网址格式不正确，请以 http:// 或 https:// 开头');
+                    return;
+                }
+
+                const newTool = { name, src, icon: icon || undefined };
+
+                if (editingIndex === -1) {
+                    // 新增
+                    tools.push(newTool);
+                } else {
+                    // 编辑
+                    tools[editingIndex] = newTool;
+                }
+
+                saveTools(tools);
+                renderGrid();
+                closeModal();
+            }
+
+            // ============================================================
+            // 6. 事件绑定
+            // ============================================================
+            addBtn.addEventListener('click', function() {
+                openModal(-1);
+            });
+
+            modalCancel.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            modalConfirm.addEventListener('click', saveToolFromModal);
+
+            // 键盘回车提交
+            toolNameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') toolUrlInput.focus(); });
+            toolUrlInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') toolIconInput.focus(); });
+            toolIconInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') modalConfirm.click(); });
+
+            // 监听窗口 resize 重新渲染（调整卡片大小）
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => renderGrid(), 200);
+            });
+
+            // 监听 storage 变化（多标签页同步）
+            window.addEventListener('storage', function(e) {
+                if (e.key === STORAGE_KEY) {
+                    tools = loadTools();
+                    renderGrid();
+                }
+            });
+
+            // ============================================================
+            // 7. 初始化
             // ============================================================
             function init() {
-                if (tools.length > 0) {
-                    const params = new URLSearchParams(window.location.search);
-                    const toolParam = parseInt(params.get('tool'), 10);
-                    const startIndex = (isNaN(toolParam) || toolParam < 0 || toolParam >= tools.length) ?
-                        0 : toolParam;
-                    activeIndex = startIndex;
-                    switchTool(startIndex);
-                } else {
-                    loadingEl.classList.add('hidden');
-                }
-                renderDrawer();
-
-                // 悬浮球点击
-                fabBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    toggleDrawer();
-                });
-
-                // 点击空白关闭抽屉
-                document.addEventListener('click', function(e) {
-                    if (isDrawerOpen && !drawer.contains(e.target) && e.target !== fabBtn) {
-                        closeDrawer();
-                    }
-                });
-
-                // 抽屉内的刷新和添加
-                refreshDrawerBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    refreshCurrent();
-                    closeDrawer();
-                });
-                addDrawerBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    openManageModal();
-                });
-
-                // 管理弹窗取消
-                modalCancel.addEventListener('click', closeManageModal);
-                modalOverlay.addEventListener('click', function(e) {
-                    if (e.target === modalOverlay) closeManageModal();
-                });
-
-                // 键盘快捷键 Ctrl+R (在 iframe 内)
-                document.addEventListener('keydown', function(e) {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-                        if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-                            e.preventDefault();
-                            refreshCurrent();
-                            closeDrawer();
-                        }
-                    }
-                });
-
-                // 监听 storage 变化（跨标签页同步）
-                window.addEventListener('storage', function(e) {
-                    if (e.key === STORAGE_KEY) {
-                        tools = loadTools();
-                        renderDrawer();
-                        if (activeIndex >= tools.length) {
-                            activeIndex = Math.max(0, tools.length - 1);
-                        }
-                        if (tools.length > 0) {
-                            switchTool(activeIndex);
-                        } else {
-                            if (currentIframe) {
-                                currentIframe.remove();
-                                currentIframe = null;
-                            }
-                            loadingEl.classList.add('hidden');
-                        }
-                    }
-                });
-
-                console.log('🧰 工具箱启动 — 悬浮球模式，无遮挡');
-                console.log('📦 当前工具:', tools.map(t => t.name).join(', '));
+                renderGrid();
+                console.log('🏠 主页图标工具箱已启动（无预设工具）');
+                console.log('📦 当前工具数:', tools.length);
             }
 
             if (document.readyState === 'complete') {
@@ -769,24 +576,25 @@
                 window.addEventListener('load', init);
             }
 
-            // 暴露调试接口
+            // 调试接口
             window.__toolbox = {
                 tools: () => tools,
-                switchTool,
-                refreshCurrent,
-                addTool: (name, src) => {
-                    tools.push({ name, src });
+                addTool: (name, src, icon) => {
+                    tools.push({ name, src, icon });
                     saveTools(tools);
-                    renderDrawer();
-                    switchTool(tools.length - 1);
+                    renderGrid();
                 },
                 removeTool: (index) => {
                     tools.splice(index, 1);
                     saveTools(tools);
-                    renderDrawer();
-                    if (activeIndex >= tools.length) activeIndex = tools.length - 1;
-                    if (tools.length > 0) switchTool(activeIndex);
-                    else { if (currentIframe) { currentIframe.remove(); currentIframe = null; } loadingEl.classList.add('hidden'); }
+                    renderGrid();
+                },
+                clearAll: () => {
+                    if (confirm('删除所有工具？')) {
+                        tools = [];
+                        saveTools(tools);
+                        renderGrid();
+                    }
                 }
             };
 
